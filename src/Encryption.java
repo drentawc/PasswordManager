@@ -14,7 +14,7 @@ public class Encryption {
     private static final String encoding = "UTF-8";
     private static final String encryptionAlgorithm = "AES";
     private static final String cipherType = "AES/CBC/PKCS5PADDING";
-    private static String encryptionKey;
+    String encryptionKey;
 
     public Encryption(String fileName) {
 
@@ -34,12 +34,12 @@ public class Encryption {
         this.encryptionKey = key;
     }
 
-    public static String encrypt(String text) {
+    public String encrypt(String text) {
         String encryptedText = "";
 
         try {
             Cipher cipher = Cipher.getInstance(cipherType);
-            byte[] key = encryptionKey.getBytes(encoding);
+            byte[] key = this.encryptionKey.getBytes(encoding);
             SecretKeySpec secret = new SecretKeySpec(key, encryptionAlgorithm);
             IvParameterSpec ivParameterSpec = new IvParameterSpec(key);
             cipher.init(Cipher.ENCRYPT_MODE, secret, ivParameterSpec);
@@ -54,12 +54,12 @@ public class Encryption {
         return encryptedText;
     }
 
-    public static String decrypt(String text) {
+    public String decrypt(String text) {
         String decryptedText = "";
 
         try {
             Cipher cipher = Cipher.getInstance(cipherType);
-            byte[] key = encryptionKey.getBytes(encoding);
+            byte[] key = this.encryptionKey.getBytes(encoding);
             SecretKeySpec secretKey = new SecretKeySpec(key, encryptionAlgorithm);
             IvParameterSpec ivparameterspec = new IvParameterSpec(key);
             cipher.init(Cipher.DECRYPT_MODE, secretKey, ivparameterspec);
