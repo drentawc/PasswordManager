@@ -18,7 +18,8 @@ public class PasswordManager {
         // System.out.println(e1);
         // System.out.println(e2);
         // System.out.println(e3);
-        String passwordFile = "passwords.txt";
+        //String passwordFile = "passwords.txt";
+        String passwordFile = "/Volumes/AES-Key/passwords.txt";
         String keyFile = "key.txt";
 
         PasswordGUI gui = new PasswordGUI(passwordFile, keyFile);
