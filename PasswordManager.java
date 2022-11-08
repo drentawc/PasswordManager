@@ -28,16 +28,30 @@ public class PasswordManager {
 
         //Encryption e = new Encryption();
 
-        FileIO io = new FileIO(passwordFile, keyFile);
-        Encryption e = new Encryption(io.getKey(), io.getPassword(), io.getIv());
+        // FileIO io = new FileIO(passwordFile, keyFile);
+        // Encryption e = new Encryption(io.getKey());
 
-        String test = "testString";
+        //Encryption e = new Encryption();
 
-        System.out.println(e.encrypt(test));
+        // String test = "testString123";
 
-        System.out.println(e.encrypt(test));
+        // String encrytpedString1 = e.encrypt(test);
 
-        //PasswordGUI gui = new PasswordGUI(passwordFile, keyFile);
-        //gui.display();
+        // String encrytpedString2 = e.encrypt(test);
+
+        // System.out.println(encrytpedString1);
+
+        // System.out.println(encrytpedString1.length());
+
+        // System.out.println(encrytpedString2);
+
+        // System.out.println(encrytpedString2.length());
+
+        // System.out.println(e.decrypt(encrytpedString1));
+
+        // System.out.println(e.decrypt(encrytpedString2));
+
+        PasswordGUI gui = new PasswordGUI(passwordFile, keyFile);
+        gui.display();
     }
 }

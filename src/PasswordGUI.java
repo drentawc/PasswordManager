@@ -39,7 +39,7 @@ public class PasswordGUI implements ActionListener {
         this.io = new FileIO(passwordFile, keyFile);
         
         //this.e = this.io.encryption;
-        //this.e = new Encryption(keyFile);
+        this.e = new Encryption(this.io.getKey());
 
         formatGUI();
         this.decryptedPasswords = new HashMap<String, Entry<String, String>>();
@@ -145,7 +145,7 @@ public class PasswordGUI implements ActionListener {
                 this.table.setModel(model);
             }
         } else {
-            System.out.println("Decrypt");
+            //System.out.println("Decrypt");
             decryptAllPasswords();
 
             if (!this.decryptedPasswords.isEmpty()) {
@@ -189,6 +189,16 @@ public class PasswordGUI implements ActionListener {
             DefaultTableModel model = new DefaultTableModel(data, columns);
  
             this.table = new JTable(model);
+        } else {
+            String[] columns = { "Account", "Username", "Password"};
+            String[][] data = new String[1][3];
+
+            data[0][0] = "Empty Password File";
+            data[0][1] = "Empty Password File";
+            data[0][2] = "Empty Password File";
+
+            DefaultTableModel model = new DefaultTableModel(data, columns);
+            this.table = new JTable(model);
         }
     }
 
@@ -197,11 +207,18 @@ public class PasswordGUI implements ActionListener {
 
         int i = 0;
         for (String key : hashMap.keySet()) {
-            tempData[i][0] = key;
-            tempData[i][1] = hashMap.get(key).getKey();
-            tempData[i][2] = hashMap.get(key).getValue();
+            if (!this.decryptedFlag) {
+                tempData[i][0] = key;
+                tempData[i][1] = hashMap.get(key).getKey();
+                tempData[i][2] = hashMap.get(key).getValue();
+            } else {
+                tempData[i][0] = key.substring(24);
+                tempData[i][1] = hashMap.get(key).getKey().substring(24);
+                tempData[i][2] = hashMap.get(key).getValue().substring(24);
+            }
             i++;
         }
+
         return tempData;
     }
 
@@ -256,9 +273,16 @@ public class PasswordGUI implements ActionListener {
             String tempAccount = e.encrypt(this.accountField.getText());
             Entry<String, String> tempEntry = new AbstractMap.SimpleEntry<String, String>(e.encrypt(this.userField.getText()), e.encrypt(this.passField.getText()));
 
-            this.decryptedFlag = true;
+            if (this.decryptedFlag) {
+                this.decryptedFlag = false;
+            } else {
+                this.decryptedFlag = true;
+            }
 
             this.encryptedPasswords.put(tempAccount, tempEntry);
+            this.decryptedPasswords.put(this.accountField.getText(), new AbstractMap.SimpleEntry<String, String>(this.userField.getText(), this.passField.getText()));
+
+            // Need to add if statement to check if password already exists, probably in io.writePassword
             io.writePassword(this.passwordFile, tempAccount, tempEntry);
 
             updateJTable();
@@ -321,11 +345,15 @@ public class PasswordGUI implements ActionListener {
 
             Entry<String, String> encryptedEntry = entry.getValue();
 
-            System.out.println(account);
+            // System.out.println(account);
+            // System.out.println(e.decrypt(encryptedEntry.getKey()));
+            // System.out.println(e.decrypt(encryptedEntry.getValue()));
 
             Entry<String, String> decryptedEntry = new AbstractMap.SimpleEntry<String, String>(e.decrypt(encryptedEntry.getKey()), e.decrypt(encryptedEntry.getValue()));
-
-            this.decryptedPasswords.put(account, decryptedEntry);
+            
+            if (!this.decryptedPasswords.containsKey(account)) {
+                this.decryptedPasswords.put(account, decryptedEntry);
+            }
         }
 
     }

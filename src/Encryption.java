@@ -4,6 +4,8 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Random;
@@ -27,8 +29,8 @@ public class Encryption {
     private static final String cipherType = "AES/CBC/PKCS5PADDING";
     private static final int keySize = 128;
     Key encryptionKey;
-    byte[] ivBytes;
-    IvParameterSpec iv;
+    //byte[] ivBytes;
+    //IvParameterSpec iv;
 
 
     public Encryption() {
@@ -42,14 +44,14 @@ public class Encryption {
 
         //byte[] encodedKey = decoder.decode(keyString);
 
-        System.out.println(ivString);
+        //System.out.println(ivString);
 
         try {
             byte[] encodedKey = keyString.getBytes("UTF-8");
             this.encryptionKey = new SecretKeySpec(encodedKey,0,encodedKey.length, encryptionAlgorithm);
 
-            this.ivBytes = ivString.getBytes("UTF-8");  
-            this.iv = new IvParameterSpec(this.ivBytes);
+            //this.ivBytes = ivString.getBytes("UTF-8");  
+            //this.iv = new IvParameterSpec(this.ivBytes);
 
         } catch (UnsupportedEncodingException e) {
             System.out.println("Encoding Exception");
@@ -94,16 +96,25 @@ public class Encryption {
         String encryptedText = "";
 
         try {
+            SecureRandom random = new SecureRandom();
+            byte[] bytes = new byte[16];
+            random.nextBytes(bytes);
+            IvParameterSpec ivSpec = new IvParameterSpec(bytes);
+
+            
+
             Cipher cipher = Cipher.getInstance(cipherType);
             //byte[] key = this.encryptionKey.getBytes(encoding);
             //SecretKeySpec secret = new SecretKeySpec(key, encryptionAlgorithm);
             //IvParameterSpec ivParameterSpec = new IvParameterSpec(key);
 
-            cipher.init(Cipher.ENCRYPT_MODE, this.encryptionKey, this.iv);
+            cipher.init(Cipher.ENCRYPT_MODE, this.encryptionKey, ivSpec);
 
             byte[] cipherText = cipher.doFinal(text.getBytes(encoding));
             Base64.Encoder encoder = Base64.getEncoder();
-            encryptedText = encoder.encodeToString(cipherText);
+            
+            //encryptedText = encoder.encodeToString(bytes) + " " + encoder.encodeToString(cipherText);
+            encryptedText = encoder.encodeToString(bytes) + encoder.encodeToString(cipherText);
 
         } catch (Exception e) {
             System.err.println("Encrypt error: " + e.getMessage());
@@ -116,11 +127,26 @@ public class Encryption {
         String decryptedText = "";
 
         try {
+            Base64.Decoder decoder = Base64.getDecoder();
+
             Cipher cipher = Cipher.getInstance(cipherType);
 
-            cipher.init(Cipher.DECRYPT_MODE, this.encryptionKey, this.iv);
-            Base64.Decoder decoder = Base64.getDecoder();
-            byte[] cipherText = decoder.decode(text.getBytes(encoding));
+            //Way to decode if using space to seperate iv and encrypted password
+            //String[] splitted = text.split(" ");
+            //byte[] iv = decoder.decode(splitted[0]);
+            //byte[] cipherText = decoder.decode(splitted[1]);
+
+            // System.out.println(text.substring(0,24));
+            // System.out.println(text.substring(24));
+
+            byte[] iv = decoder.decode(text.substring(0,24));
+            byte[] cipherText = decoder.decode(text.substring(24));
+
+            IvParameterSpec ivSpec = new IvParameterSpec(iv);
+
+            cipher.init(Cipher.DECRYPT_MODE, this.encryptionKey, ivSpec);
+            
+            //byte[] cipherText = decoder.decode(text.getBytes(encoding));
             decryptedText = new String(cipher.doFinal(cipherText), encoding);
 
         } catch (Exception e) {
@@ -130,14 +156,14 @@ public class Encryption {
         return decryptedText;
     }
 
-    public byte[] generateIv() {
-        byte[] iv = new byte[16];
-        Random random = new SecureRandom();
-        random.nextBytes(iv);
-        this.ivBytes = iv;
-        this.iv = new IvParameterSpec(iv);
-        return iv;
-    }
+    // public byte[] generateIv() {
+    //     byte[] iv = new byte[16];
+    //     Random random = new SecureRandom();
+    //     random.nextBytes(iv);
+    //     // this.ivBytes = iv;
+    //     // this.iv = new IvParameterSpec(iv);
+    //     return iv;
+    // }
 
     public Key generateKey() throws NoSuchAlgorithmException {
         KeyGenerator keyGen = KeyGenerator.getInstance(encryptionAlgorithm);

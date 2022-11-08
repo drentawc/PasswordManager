@@ -24,10 +24,8 @@ public class FileIO {
 
     File passwordFile;
     File keyFile;
-    Encryption encrypt;
     String key;
     String masterPassword;
-    String iv;
     HashMap<String, Entry<String, String>> passwords;
     HashMap<String, Entry<String, String>> newPasswords;
 
@@ -51,7 +49,6 @@ public class FileIO {
 
             this.key = keys[0];
             this.masterPassword = keys[1];
-            this.iv = keys[2];
 
         } else {
             createFile(keyFileName);
@@ -61,7 +58,7 @@ public class FileIO {
     public String[] readKey(String fileName) {
 
         String key = "";
-        String iv = "";
+        //String iv = "";
         String masterPassword = "";
 
         try {
@@ -69,15 +66,15 @@ public class FileIO {
             List<String> lines = Files.readAllLines(Paths.get(fileName));
 
             key = lines.get(0);
-            iv = lines.get(1);
-            masterPassword = lines.get(2);
+            //iv = lines.get(1);
+            masterPassword = lines.get(1);
 
         } catch (FileNotFoundException e) {
             System.out.println("File not found.");
         } catch (IOException e) {
             System.out.println("IOException");
         }
-        return new String[]{ key, masterPassword, iv };  
+        return new String[]{ key, masterPassword };  
     }
 
     public HashMap<String, Entry<String, String>> readPasswords(String fileName) {
@@ -94,6 +91,7 @@ public class FileIO {
                 tempPasswords.put(temp[0], new SimpleEntry<String, String>(temp[1], temp[2]));
 
             }
+
             reader.close();
 
         } catch (FileNotFoundException e) {
@@ -122,6 +120,7 @@ public class FileIO {
                     if (!tempLine.equals(line)) {
                         //Change to append
                         writer.write(line + "\n");
+                        //writer.write(line + "\n");
                     } else {
                         System.out.println("Password exists");
                     }
@@ -165,18 +164,18 @@ public class FileIO {
             byte[] key = encrypt.generateKey().getEncoded();
 
             String keyString = Base64.getEncoder().encodeToString(key) + "\n";
-            String ivString = Base64.getEncoder().encodeToString(encrypt.generateIv()) + "\n";
+            //String ivString = Base64.getEncoder().encodeToString(encrypt.generateIv()) + "\n";
             String encryptedPassword = encrypt.encrypt(password);
             
 
             writer.write(keyString);
-            writer.write(ivString);
             writer.write(encryptedPassword);
+            //writer.write(encryptedPassword);
 
 
             this.key = keyString;
-            this.masterPassword = ivString;
-            this.iv = encryptedPassword;
+            this.masterPassword = encryptedPassword;
+            // this.iv = encryptedPassword;
 
             writer.close();
             input.close();
@@ -219,8 +218,8 @@ public class FileIO {
         return this.masterPassword;
     }
 
-    public String getIv() {
-        return this.iv;
-    }
+    // public String getIv() {
+    //     return this.iv;
+    // }
 
 }
