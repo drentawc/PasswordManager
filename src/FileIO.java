@@ -103,27 +103,42 @@ public class FileIO {
 
     //Maybe have a method to write one single password/boolean to specify 
 
-    public void writePassword(String fileName, String account, Entry<String, String> entry) {
+    //Maybe add boolean parameter to see if it needs to decrypt the parameters,
+
+    public void writePassword(Encryption encrypt, String fileName, String account, Entry<String, String> entry) {
 
         try {
+
             BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true));
             Scanner reader = new Scanner(this.passwordFile);
             String line = account + " " + entry.getKey() + " " + entry.getValue();
+            Boolean found = false;
+
+            String decryptedString = encrypt.decrypt(account) + " " + encrypt.decrypt(entry.getKey()) + " " + encrypt.decrypt(entry.getValue());
 
             if (this.passwordFile.length() == 0) {
                 System.out.println("File empty");
                 writer.write(line + "\n");
             } else {
                 while (reader.hasNextLine()) {
-                    String tempLine = reader.nextLine();
+                    String[] split = reader.nextLine().split(" ");
+                    String tempLine = encrypt.decrypt(split[0]) + " " + encrypt.decrypt(split[1]) + " " + encrypt.decrypt(split[2]);
+
+                    System.out.println(tempLine);
+                    System.out.println(decryptedString);
                     
-                    if (!tempLine.equals(line)) {
+                    if (tempLine.equals(decryptedString)) {
                         //Change to append
-                        writer.write(line + "\n");
+                        System.out.println("Line was found");
+                        found = true;
+                        break;
                         //writer.write(line + "\n");
-                    } else {
-                        System.out.println("Password exists");
-                    }
+                    } 
+                }
+
+                if (!found) {
+                    writer.append(line + "\n");
+                    System.out.println("Wrote line");
                 }
             }
             reader.close();

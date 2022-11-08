@@ -273,17 +273,18 @@ public class PasswordGUI implements ActionListener {
             String tempAccount = e.encrypt(this.accountField.getText());
             Entry<String, String> tempEntry = new AbstractMap.SimpleEntry<String, String>(e.encrypt(this.userField.getText()), e.encrypt(this.passField.getText()));
 
-            if (this.decryptedFlag) {
-                this.decryptedFlag = false;
-            } else {
-                this.decryptedFlag = true;
-            }
+            // if (this.decryptedFlag) {
+            //     this.decryptedFlag = false;
+            // } else {
+            //     this.decryptedFlag = true;
+            // }
+            this.decryptedFlag = !this.decryptedFlag;
 
             this.encryptedPasswords.put(tempAccount, tempEntry);
             this.decryptedPasswords.put(this.accountField.getText(), new AbstractMap.SimpleEntry<String, String>(this.userField.getText(), this.passField.getText()));
 
             // Need to add if statement to check if password already exists, probably in io.writePassword
-            io.writePassword(this.passwordFile, tempAccount, tempEntry);
+            io.writePassword(this.e, this.passwordFile, tempAccount, tempEntry);
 
             updateJTable();
         }
