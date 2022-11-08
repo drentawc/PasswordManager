@@ -1,4 +1,4 @@
-import src.PasswordGUI;
+import src.*;
 
 /**
   Password Manager GUI using AES 128 bit encryption.
@@ -20,9 +20,24 @@ public class PasswordManager {
         // System.out.println(e3);
         //String passwordFile = "passwords.txt";
         String passwordFile = "/Volumes/AES-Key/passwords.txt";
-        String keyFile = "key.txt";
+        String keyFile = "key2.txt";
 
-        PasswordGUI gui = new PasswordGUI(passwordFile, keyFile);
-        gui.display();
+        for (String arg : args) {
+            System.out.println(arg);
+        }
+
+        //Encryption e = new Encryption();
+
+        FileIO io = new FileIO(passwordFile, keyFile);
+        Encryption e = new Encryption(io.getKey(), io.getPassword(), io.getIv());
+
+        String test = "testString";
+
+        System.out.println(e.encrypt(test));
+
+        System.out.println(e.encrypt(test));
+
+        //PasswordGUI gui = new PasswordGUI(passwordFile, keyFile);
+        //gui.display();
     }
 }

@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.event.WindowEvent;
 
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -35,8 +36,10 @@ public class PasswordGUI implements ActionListener {
         this.passwordFile = passwordFile;
         this.keyFile = keyFile;
 
-        this.e = new Encryption(keyFile);
-        this.io = new FileIO(passwordFile);
+        this.io = new FileIO(passwordFile, keyFile);
+        
+        //this.e = this.io.encryption;
+        //this.e = new Encryption(keyFile);
 
         formatGUI();
         this.decryptedPasswords = new HashMap<String, Entry<String, String>>();
@@ -115,7 +118,8 @@ public class PasswordGUI implements ActionListener {
     }
 
     public void display() {
-        checkPassword();
+        this.mainFrame.setVisible(true);
+        this.mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
     public void updateJTable() {
@@ -209,14 +213,17 @@ public class PasswordGUI implements ActionListener {
             this.passFrame.setVisible(false);
             this.passFrame.dispose();
         } else if (e.getActionCommand().equals("Decrypt/Encrypt")) {
-            decryptAllPasswords();
 
-            updateJTable();
+            if (!decryptedFlag) {
+                checkPassword();
+            } else {
+                updateJTable();
+            }
         } else if (e.getActionCommand().equals("master")) {
-            this.masterFrame.setVisible(false);
-            this.masterFrame.dispose();
+
 
             System.out.println(this.masterField.getText());
+
 
             /**
              * 
@@ -228,13 +235,17 @@ public class PasswordGUI implements ActionListener {
 
             if (this.masterField.getText().equals("asd")) {
 
-                this.mainFrame.setVisible(true);
-                this.mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                this.masterFrame.setVisible(false);
+                this.masterFrame.dispose();
+
+                decryptAllPasswords();
+                updateJTable();
 
             } else {
                 System.out.println("Wrong master password, exiting....");
                 this.masterFrame.setVisible(false);
                 this.masterFrame.dispose();
+                this.mainFrame.dispatchEvent(new WindowEvent(this.mainFrame, WindowEvent.WINDOW_CLOSING));
             }
         }
     }
@@ -316,28 +327,6 @@ public class PasswordGUI implements ActionListener {
 
             this.decryptedPasswords.put(account, decryptedEntry);
         }
-
-        // String[][] data = getTableData(this.encryptedPasswords);
-
-        // for (int x = 0; x < data.length; x++) {
-        //     System.out.println(data[x][1]);
-        // }
-
-        // if (!this.encryptedPasswords.isEmpty()) {
-        //     int size = encryptedPasswords.size();
-
-        //     String[] columns = { "Account", "Username", "Password"};
-        //     String[][] data = getTableData(this.encryptedPasswords);
-
-        //     // System.out.println("Create");
-        //     // for (int x = 0; x < data.length; x++) {
-        //     //     System.out.println(data[x][1]);
-        //     // }
-        //     // System.out.println();
- 
-        //     this.table = new JTable(data, columns);
-        // }
-
 
     }
 
