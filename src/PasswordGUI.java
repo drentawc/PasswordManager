@@ -13,8 +13,9 @@ import java.util.Map.Entry;
 
 public class PasswordGUI implements ActionListener {
 
-    Encryption e;
+    Encryption encrypt;
     FileIO io;
+    JFrame fileFrame;
     JFrame mainFrame;
     JFrame passFrame;
     JFrame masterFrame;
@@ -22,26 +23,24 @@ public class PasswordGUI implements ActionListener {
     JTextField userField;
     JTextField passField;
     JTextField masterField;
+    JTextField passwordField;
+    JTextField keyField;
     JTable table;
     JPanel panel;
-    //JList<String> usernameList;
-    //JList<String> passwordList;
     String passwordFile;
     String keyFile;
     Boolean decryptedFlag;
     HashMap<String, Entry<String, String>> encryptedPasswords;
     HashMap<String, Entry<String, String>> decryptedPasswords;
 
-    public PasswordGUI(String passwordFile, String keyFile) {
-        this.passwordFile = passwordFile;
-        this.keyFile = keyFile;
+    public PasswordGUI() {
+        // this.passwordFile = passwordFile;
+        // this.keyFile = keyFile;
 
-        this.io = new FileIO(passwordFile, keyFile);
+        // this.io = new FileIO(passwordFile, keyFile);
         
-        //this.e = this.io.encryption;
-        this.e = new Encryption(this.io.getKey());
+        // this.encrypt = new Encryption(this.io.getKey());
 
-        formatGUI();
         this.decryptedPasswords = new HashMap<String, Entry<String, String>>();
     }
 
@@ -118,8 +117,9 @@ public class PasswordGUI implements ActionListener {
     }
 
     public void display() {
-        this.mainFrame.setVisible(true);
-        this.mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        fileInputFrame();
+        //this.mainFrame.setVisible(true);
+        //this.mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
     public void updateJTable() {
@@ -131,12 +131,10 @@ public class PasswordGUI implements ActionListener {
     
                 String[] columns = { "Account", "Username", "Password"};
                 String[][] data = getTableData(this.encryptedPasswords);
-    
-                System.out.println("Create");
+
                 for (int x = 0; x < data.length; x++) {
                     System.out.println(data[x][1]);
                 }
-                System.out.println();
 
                 this.decryptedFlag = false;
 
@@ -145,7 +143,6 @@ public class PasswordGUI implements ActionListener {
                 this.table.setModel(model);
             }
         } else {
-            //System.out.println("Decrypt");
             decryptAllPasswords();
 
             if (!this.decryptedPasswords.isEmpty()) {
@@ -157,7 +154,6 @@ public class PasswordGUI implements ActionListener {
                     System.out.print(data[x][1]);
                     System.out.print(data[x][2]);
                 }
-                System.out.println();
 
                 this.decryptedFlag = true;
 
@@ -180,7 +176,6 @@ public class PasswordGUI implements ActionListener {
             String[] columns = { "Account", "Username", "Password"};
             String[][] data = getTableData(this.encryptedPasswords);
 
-            System.out.println("Create");
             for (int x = 0; x < data.length; x++) {
                 System.out.println(data[x][1]);
             }
@@ -237,18 +232,7 @@ public class PasswordGUI implements ActionListener {
                 updateJTable();
             }
         } else if (e.getActionCommand().equals("master")) {
-
-
             System.out.println(this.masterField.getText());
-
-
-            /**
-             * 
-             * INSTEAD ADD THIS FUNCTIONALITY TO DECRYPT NOT TO START OF PROGRAM OR BOTH
-             * 
-             */
-
-
 
             if (this.masterField.getText().equals("asd")) {
 
@@ -264,27 +248,33 @@ public class PasswordGUI implements ActionListener {
                 this.masterFrame.dispose();
                 this.mainFrame.dispatchEvent(new WindowEvent(this.mainFrame, WindowEvent.WINDOW_CLOSING));
             }
+        } else if (e.getActionCommand().equals("files")) {
+            this.passwordFile = this.passwordField.getText();
+            this.keyFile = this.keyField.getText();
+
+            this.io = new FileIO(passwordFile, keyFile);
+            
+            this.encrypt = new Encryption(this.io.getKey());
+
+            formatGUI();
+            this.mainFrame.setVisible(true);
+            this.mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         }
     }
 
     public void addPasswords() {
         
         if (!this.userField.getText().isEmpty()) {
-            String tempAccount = e.encrypt(this.accountField.getText());
-            Entry<String, String> tempEntry = new AbstractMap.SimpleEntry<String, String>(e.encrypt(this.userField.getText()), e.encrypt(this.passField.getText()));
+            String tempAccount = this.encrypt.encrypt(this.accountField.getText());
+            Entry<String, String> tempEntry = new AbstractMap.SimpleEntry<String, String>(this.encrypt.encrypt(this.userField.getText()), this.encrypt.encrypt(this.passField.getText()));
 
-            // if (this.decryptedFlag) {
-            //     this.decryptedFlag = false;
-            // } else {
-            //     this.decryptedFlag = true;
-            // }
             this.decryptedFlag = !this.decryptedFlag;
 
             this.encryptedPasswords.put(tempAccount, tempEntry);
             this.decryptedPasswords.put(this.accountField.getText(), new AbstractMap.SimpleEntry<String, String>(this.userField.getText(), this.passField.getText()));
 
             // Need to add if statement to check if password already exists, probably in io.writePassword
-            io.writePassword(this.e, this.passwordFile, tempAccount, tempEntry);
+            io.writePassword(this.encrypt, this.passwordFile, tempAccount, tempEntry);
 
             updateJTable();
         }
@@ -340,23 +330,56 @@ public class PasswordGUI implements ActionListener {
     }
 
     public void decryptAllPasswords() {
-
         for (Entry<String,Entry<String,String>> entry : this.encryptedPasswords.entrySet()) {
-            String account = this.e.decrypt(entry.getKey());
+            String account = this.encrypt.decrypt(entry.getKey());
 
             Entry<String, String> encryptedEntry = entry.getValue();
 
-            // System.out.println(account);
-            // System.out.println(e.decrypt(encryptedEntry.getKey()));
-            // System.out.println(e.decrypt(encryptedEntry.getValue()));
-
-            Entry<String, String> decryptedEntry = new AbstractMap.SimpleEntry<String, String>(e.decrypt(encryptedEntry.getKey()), e.decrypt(encryptedEntry.getValue()));
+            Entry<String, String> decryptedEntry = new AbstractMap.SimpleEntry<String, String>(this.encrypt.decrypt(encryptedEntry.getKey()), this.encrypt.decrypt(encryptedEntry.getValue()));
             
             if (!this.decryptedPasswords.containsKey(account)) {
                 this.decryptedPasswords.put(account, decryptedEntry);
             }
         }
-
     }
 
+    public void fileInputFrame() {
+        this.fileFrame = new JFrame("Enter file locations");
+        this.fileFrame.setLayout(new GridBagLayout());
+
+        GridBagConstraints c = new GridBagConstraints();
+
+        c.fill = SwingConstants.VERTICAL;
+
+        c.gridx = 0;
+        c.gridy = 0;
+        JLabel password = new JLabel("Password File: ");
+        this.fileFrame.add(password, c);
+
+        c.gridx = 1;
+        c.gridy = 0;
+        this.passwordField = new JTextField();
+        this.fileFrame.add(this.passwordField, c);
+
+        c.gridx = 0;
+        c.gridy = 2;
+        JLabel keyLabel = new JLabel("Key File: ");
+        this.fileFrame.add(keyLabel, c);
+
+        c.gridx = 1;
+        c.gridy = 2;
+        this.keyField = new JTextField();
+        this.fileFrame.add(this.keyField, c);
+
+        c.gridx = 1;
+        c.gridy = 3;
+        JButton enter = new JButton("Enter");
+        this.fileFrame.add(enter, c);
+
+        enter.addActionListener(this);
+        enter.setActionCommand("files");
+
+        this.fileFrame.setSize(300,300);
+        this.fileFrame.setVisible(true);
+    }
 }
